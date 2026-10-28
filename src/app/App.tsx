@@ -189,7 +189,7 @@ const T = {
         },
         {
           type: "Bulletin",
-          title: "Bulletin de septembre 2026 — Sortie Villapinzón : système autonome d'irrigation et d'énergie (2.1.1)",
+          title: "Bulletin de septembre 2026 — Sortie Tibacuy : socialisation du projet, activités de production certification et commercialisation digitale",
           date: "Septembre 2026",
           tag: "Vulgarisation",
           file: "Boletín septiembre 2026 – Proyecto FEF CoRRIC.pdf",
