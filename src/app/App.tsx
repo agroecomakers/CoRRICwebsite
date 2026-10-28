@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Menu, X, Globe, Download, ChevronRight, ChevronDown } from "lucide-react";
+import { Menu, X, Globe, Download, ChevronRight, ChevronDown, LogIn } from "lucide-react";
 
 type Lang = "fr" | "es";
 
@@ -10,6 +10,12 @@ interface Zone {
   y: number;
 }
 
+// URL de l'Intranet : à remplacer par la vraie adresse
+const INTRANET_URL = "https://script.google.com/macros/s/AKfycbwbl0esgHPnskk0Tbkh4hhz71-fK_Ze2ew4LiLEb4iMw6xn5qBs34znKvn9OYjoxg56/exec";
+
+// Chemin de base des documents (dans public/documents/)
+const DOCS = import.meta.env.BASE_URL + "documents/";
+
 const T = {
   fr: {
     nav: {
@@ -18,6 +24,7 @@ const T = {
       digital: "Numérique",
       partners: "Partenaires",
       resources: "Ressources",
+      intranet: "Intranet",
     },
     hero: {
       expand: "Coopération pour la Réforme Rurale Intégrale en Colombie",
@@ -128,19 +135,37 @@ const T = {
       categories: [
         {
           label: "Porteurs & Co-coordinateurs",
-          orgs: ["Ambassade de France en Colombie", "CIRAD", "IRD"],
+          orgs: [
+            { name: "Ambassade de France en Colombie", url: "https://co.ambafrance.org/" },
+            { name: "CIRAD", url: "https://www.cirad.fr/" },
+            { name: "IRD", url: "https://www.ird.fr/" },
+          ],
         },
         {
           label: "Centres de recherche colombiens",
-          orgs: ["AGROSAVIA", "CIAT", "SINCHI", "IDEAM", "ICANH"],
+          orgs: [
+            { name: "AGROSAVIA", url: "https://www.agrosavia.co/" },
+            { name: "CIAT", url: "https://alliancebioversityciat.org/" },
+            { name: "IDEAM", url: "https://www.ideam.gov.co/" },
+            { name: "ICANH", url: "https://www.icanh.gov.co/" },
+          ],
         },
         {
           label: "Universités",
-          orgs: ["Pontificia Universidad Javeriana (PUJ)", "Universidad de Nariño (UNINAR)"],
+          orgs: [
+            { name: "Pontificia Universidad Javeriana (PUJ)", url: "https://www.javeriana.edu.co/inicio" },
+            { name: "Universidad de Nariño (UDENAR)", url: "https://www.udenar.edu.co/" },
+          ],
         },
         {
           label: "Société civile & Alliances",
-          orgs: ["IFEA-INER", "FCDS", "ONFA", "ASCAFUSA", "REDMAC"],
+          orgs: [
+            { name: "IFEA-INER", url: "https://www.ifea.org.pe/nous/" },
+            { name: "FCDS", url: "https://fcds.org.co/en/" },
+            { name: "ONFA", url: "https://onfandina.com/" },
+            { name: "APRENAT", url: "https://aprenat.org/" },
+            { name: "REDMAC", url: "https://jovenesredmac.wixsite.com/redmac" },
+          ],
         },
       ],
     },
@@ -149,28 +174,25 @@ const T = {
       title: "Médiathèque du projet",
       items: [
         {
-          type: "Bulletin",
-          title: "Bulletin semestriel — Foncier et accès à la terre",
-          date: "Juin 2024",
-          tag: "Vulgarisation",
-        },
-        {
-          type: "Guide",
-          title: "Manuel de diagnostic Marchitez/Moko pour les musacées",
-          date: "Mars 2024",
-          tag: "Méthodologie",
-        },
-        {
-          type: "Policy Brief",
-          title: "Note d'orientation — Zéro déforestation dans le Guaviare",
-          date: "Déc. 2023",
-          tag: "Décideurs",
+          type: "Acta",
+          title: "Acte des réunions de lancement virtuelle — 1er et 12 juin 2026",
+          date: "Juin 2026",
+          tag: "Réunions",
+          file: "Acta_FEF_CoRRIC_1_y_12_de_junio_2026_ES.pdf",
         },
         {
           type: "Bulletin",
-          title: "Bulletin semestriel — Déforestation et systèmes agroforestiers",
-          date: "Déc. 2023",
+          title: "Bulletin de juin 2026 — Sortie Villapinzón : système autonome d'irrigation et d'énergie (2.1.1)",
+          date: "Juin 2026",
+          tag: "Recherche",
+          file: "Boletín junio 2026 – Proyecto FEF CoRRIC.pdf",
+        },
+        {
+          type: "Bulletin",
+          title: "Bulletin de septembre 2026 — Sortie Villapinzón : système autonome d'irrigation et d'énergie (2.1.1)",
+          date: "Septembre 2026",
           tag: "Vulgarisation",
+          file: "Boletín septiembre 2026 – Proyecto FEF CoRRIC.pdf",
         },
       ],
       download: "Télécharger",
@@ -181,7 +203,7 @@ const T = {
       tagline:
         "Coopération scientifique franco-colombienne pour une réforme rurale intégrale et durable.",
       contact: "Contact",
-      email: "corrIC@cirad.fr",
+      email: "fefcorric@cirad.fr",
       rights: "© 2024 CoRRIC — Fonds Équipe France, Ambassade de France en Colombie",
     },
   },
@@ -192,6 +214,7 @@ const T = {
       digital: "Digital",
       partners: "Socios",
       resources: "Recursos",
+      intranet: "Intranet",
     },
     hero: {
       expand: "Cooperación para la Reforma Rural Integral en Colombia",
@@ -298,23 +321,41 @@ const T = {
     },
     partners: {
       sectionLabel: "SOCIOS",
-      title: "Una red de 30 instituciones comprometidas",
+      title: "Una red de instituciones comprometidas",
       categories: [
         {
           label: "Portadores y Co-coordinadores",
-          orgs: ["Embajada de Francia en Colombia", "CIRAD", "IRD"],
+          orgs: [
+            { name: "Embajada de Francia en Colombia", url: "https://co.ambafrance.org/" },
+            { name: "CIRAD", url: "https://www.cirad.fr/" },
+            { name: "IRD", url: "https://www.ird.fr/" },
+          ],
         },
         {
           label: "Centros de investigación colombianos",
-          orgs: ["AGROSAVIA", "CIAT", "SINCHI", "IDEAM", "ICANH"],
+          orgs: [
+            { name: "AGROSAVIA", url: "https://www.agrosavia.co/" },
+            { name: "CIAT", url: "https://alliancebioversityciat.org/" },
+            { name: "IDEAM", url: "https://www.ideam.gov.co/" },
+            { name: "ICANH", url: "https://www.icanh.gov.co/" },
+          ],
         },
         {
           label: "Universidades",
-          orgs: ["Pontificia Universidad Javeriana (PUJ)", "Universidad de Nariño (UNINAR)"],
+          orgs: [
+            { name: "Pontificia Universidad Javeriana (PUJ)", url: "https://www.javeriana.edu.co/inicio" },
+            { name: "Universidad de Nariño (UDENAR)", url: "https://www.udenar.edu.co/" },
+          ],
         },
         {
           label: "Sociedad civil y Alianzas",
-          orgs: ["IFEA-INER", "FCDS", "ONFA", "ASCAFUSA", "REDMAC"],
+          orgs: [
+            { name: "IFEA-INER", url: "https://www.ifea.org.pe/nous/" },
+            { name: "FCDS", url: "https://fcds.org.co/en/" },
+            { name: "ONFA", url: "https://onfandina.com/" },
+            { name: "APRENAT", url: "https://aprenat.org/" },
+            { name: "REDMAC", url: "https://jovenesredmac.wixsite.com/redmac" },
+          ],
         },
       ],
     },
@@ -323,28 +364,25 @@ const T = {
       title: "Mediateca del proyecto",
       items: [
         {
-          type: "Boletín",
-          title: "Boletín semestral — Tierra y acceso a la propiedad",
-          date: "Junio 2024",
-          tag: "Divulgación",
+          type: "Acta",
+          title: "Acte des réunions de lancement virtuelle — 1er et 12 juin 2026",
+          date: "Junio 2026",
+          tag: "Reuniones",
+          file: "Acta_FEF_CoRRIC_1_y_12_de_junio_2026_ES.pdf",
         },
         {
-          type: "Guía",
-          title: "Manual de diagnóstico Marchitez/Moko para musáceas",
-          date: "Marzo 2024",
-          tag: "Metodología",
+          type: "Bulletin",
+          title: "Boletín de junio 2026 — Salida Villapinzón : systema autonomo de irrigación y energía (2.1.1)",
+          date: "Juin 2026",
+          tag: "Investigación",
+          file: "Boletín junio 2026 – Proyecto FEF CoRRIC.pdf",
         },
         {
-          type: "Policy Brief",
-          title: "Nota de orientación — Cero deforestación en el Guaviare",
-          date: "Dic. 2023",
-          tag: "Decisores",
-        },
-        {
-          type: "Boletín",
-          title: "Boletín semestral — Deforestación y sistemas agroforestales",
-          date: "Dic. 2023",
-          tag: "Divulgación",
+          type: "Bulletin",
+          title: "Bulletin de septembre 2026 — Salida Tibacuy : cooperación digital agroeoclogica con APRENAT (2.4.2, 2.6.3, 2.6.5, 3.2.2)",
+          date: "Septembre 2026",
+          tag: "Divulcagión",
+          file: "Boletín septiembre 2026 – Proyecto FEF CoRRIC.pdf",
         },
       ],
       download: "Descargar",
@@ -354,7 +392,7 @@ const T = {
       tagline:
         "Cooperación científica franco-colombiana para una reforma rural integral y sostenible.",
       contact: "Contacto",
-      email: "corrIC@cirad.fr",
+      email: "fefcorric@cirad.fr",
       rights: "© 2024 CoRRIC — Fondo Equipo Francia, Embajada de Francia en Colombia",
     },
   },
@@ -441,7 +479,7 @@ function Navbar({
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 \${
         scrolled ? "bg-primary/96 backdrop-blur-md shadow-lg" : "bg-transparent"
       }`}
     >
@@ -463,6 +501,15 @@ function Navbar({
         </div>
 
         <div className="flex items-center gap-3">
+          <a
+            href={INTRANET_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-accent hover:text-primary-foreground border border-accent/40 hover:border-accent px-3 py-1.5 transition-all duration-200"
+          >
+            <LogIn size={11} />
+            {t.nav.intranet}
+          </a>
           <button
             onClick={() => setLang(lang === "fr" ? "es" : "fr")}
             className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-primary-foreground/65 hover:text-primary-foreground border border-primary-foreground/20 hover:border-primary-foreground/40 px-3 py-1.5 transition-all duration-200"
@@ -492,6 +539,15 @@ function Navbar({
               {label}
             </a>
           ))}
+          <a
+            href={INTRANET_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs uppercase tracking-widest text-accent"
+            onClick={() => setOpen(false)}
+          >
+            {t.nav.intranet}
+          </a>
         </div>
       )}
     </nav>
@@ -503,7 +559,6 @@ function Navbar({
 function Hero({ t }: { t: typeof T.fr }) {
   return (
     <section id="top" className="min-h-screen bg-primary flex flex-col relative overflow-hidden">
-      {/* Background texture stripes */}
       <div
         className="absolute inset-0 opacity-[0.035]"
         style={{
@@ -512,7 +567,6 @@ function Hero({ t }: { t: typeof T.fr }) {
         }}
       />
 
-      {/* Main content */}
       <div className="flex-1 flex flex-col justify-center max-w-7xl mx-auto w-full px-6 pt-28 pb-10 relative">
         <p className="text-accent text-[10px] tracking-[0.32em] uppercase mb-7 font-body font-bold">
           {t.hero.expand}
@@ -533,14 +587,12 @@ function Hero({ t }: { t: typeof T.fr }) {
           </a>
         </div>
 
-        {/* Scroll hint */}
         <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30">
           <div className="w-px h-10 bg-primary-foreground" />
           <ChevronDown size={14} className="text-primary-foreground" />
         </div>
       </div>
 
-      {/* Stats bar */}
       <div className="relative border-t border-primary-foreground/10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-primary-foreground/10">
@@ -578,7 +630,6 @@ function About({ t }: { t: typeof T.fr }) {
           <p className="text-foreground/80 leading-relaxed text-lg">{t.about.body1}</p>
           <p className="text-foreground/80 leading-relaxed text-lg">{t.about.body2}</p>
 
-          {/* Photo */}
           <div className="mt-4 aspect-[16/7] bg-muted overflow-hidden">
             <img
               src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=1200&h=525&fit=crop&auto=format"
@@ -587,7 +638,6 @@ function About({ t }: { t: typeof T.fr }) {
             />
           </div>
 
-          {/* Governance box */}
           <div className="mt-8 bg-card border border-border p-7">
             <h3 className="font-display font-bold text-lg text-foreground mb-3 flex items-center gap-3">
               <span className="w-6 h-0.5 bg-accent flex-shrink-0" />
@@ -620,7 +670,6 @@ function Components({ t }: { t: typeof T.fr }) {
           <p className="text-muted-foreground max-w-2xl leading-relaxed">{t.components.subtitle}</p>
         </div>
 
-        {/* Tab selector */}
         <div className="flex flex-wrap gap-0 mb-0 border-b border-border">
           {t.components.tabs.map((tb, i) => (
             <button
@@ -637,7 +686,6 @@ function Components({ t }: { t: typeof T.fr }) {
           ))}
         </div>
 
-        {/* Tab panel */}
         <div className="bg-card border border-t-0 border-border p-8 md:p-12">
           <div className="grid md:grid-cols-[2fr_1fr] gap-12 items-start">
             <div>
@@ -657,7 +705,6 @@ function Components({ t }: { t: typeof T.fr }) {
               </div>
             </div>
 
-            {/* Decorative block */}
             <div className="flex items-center justify-center h-40 md:h-full min-h-[8rem]">
               <div
                 className="w-36 h-36 flex items-center justify-center opacity-90"
@@ -696,14 +743,12 @@ function ColombiaMap({ t }: { t: typeof T.fr }) {
         </div>
 
         <div className="grid md:grid-cols-[auto_1fr] gap-12 items-center">
-          {/* SVG Colombia outline */}
           <div className="flex justify-center">
             <svg
               viewBox="0 0 400 440"
               className="w-full max-w-[320px] md:max-w-[360px]"
               aria-label="Carte de la Colombie avec les trois zones d'intervention"
             >
-              {/* Country fill */}
               <path
                 d="M 130,55 L 158,28 L 188,14 L 242,10 L 292,20 L 333,46 L 360,76 L 382,130 L 375,182 L 360,234 L 344,294 L 315,341 L 282,380 L 246,408 L 206,408 L 164,390 L 138,362 L 112,312 L 92,260 L 78,200 L 82,148 L 106,97 L 130,55 Z"
                 fill="#2d5e3e"
@@ -711,7 +756,6 @@ function ColombiaMap({ t }: { t: typeof T.fr }) {
                 strokeWidth="1.5"
                 strokeLinejoin="round"
               />
-              {/* Internal region texture — faint lines */}
               <path
                 d="M 180,80 Q 220,120 260,110 M 150,160 Q 200,180 260,165 M 130,230 Q 190,250 250,230"
                 stroke="#4a7c59"
@@ -720,7 +764,6 @@ function ColombiaMap({ t }: { t: typeof T.fr }) {
                 opacity="0.5"
               />
 
-              {/* Territory dots + labels */}
               {t.territories.zones.map((zone, i) => (
                 <g
                   key={zone.name}
@@ -728,7 +771,6 @@ function ColombiaMap({ t }: { t: typeof T.fr }) {
                   onMouseLeave={() => setHovered(null)}
                   className="cursor-pointer"
                 >
-                  {/* Pulse ring */}
                   <circle
                     cx={zone.x}
                     cy={zone.y}
@@ -739,7 +781,6 @@ function ColombiaMap({ t }: { t: typeof T.fr }) {
                     opacity={hovered === i ? 0.6 : 0.3}
                     style={{ transition: "all 0.25s ease" }}
                   />
-                  {/* Dot */}
                   <circle
                     cx={zone.x}
                     cy={zone.y}
@@ -749,7 +790,6 @@ function ColombiaMap({ t }: { t: typeof T.fr }) {
                     strokeWidth="1.5"
                     style={{ transition: "all 0.25s ease" }}
                   />
-                  {/* Label */}
                   <text
                     x={zone.x + (zone.x > 220 ? 14 : zone.x < 150 ? -14 : 14)}
                     y={zone.y + 4}
@@ -767,14 +807,13 @@ function ColombiaMap({ t }: { t: typeof T.fr }) {
             </svg>
           </div>
 
-          {/* Zone descriptions */}
           <div className="space-y-3">
             {t.territories.zones.map((zone, i) => (
               <div
                 key={zone.name}
                 onMouseEnter={() => setHovered(i)}
                 onMouseLeave={() => setHovered(null)}
-                className={`border p-6 cursor-default transition-all duration-250 ${
+                className={`border p-6 cursor-default transition-all duration-250 \${
                   hovered === i
                     ? "border-accent bg-primary-foreground/5"
                     : "border-primary-foreground/12"
@@ -868,15 +907,26 @@ function Partners({ t }: { t: typeof T.fr }) {
                 {cat.label}
               </h3>
               <div className="flex flex-wrap gap-3">
-                {cat.orgs.map((org) => (
-                  <div
-                    key={org}
-                    className="border border-border bg-card px-5 py-3 text-sm font-medium text-foreground hover:border-accent/35 hover:bg-muted transition-all duration-200"
-                  >
-                    {org}
-                  </div>
-                ))}
-              </div>
+                {cat.orgs.map((org) =>
+                  org.url ? (
+                    <a
+                      key={org.name}
+                      href={org.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="border border-border bg-card px-5 py-3 text-sm font-medium text-foreground hover:border-accent/35 hover:bg-muted transition-all duration-200"
+                    >
+                      {org.name}
+                    </a>
+                  ) : (
+                    <div
+                      key={org.name}
+                      className="border border-border bg-card px-5 py-3 text-sm font-medium text-foreground"
+                    >
+                      {org.name}
+                    </div>
+                  )
+                )}              </div>
             </div>
           ))}
         </div>
@@ -893,6 +943,7 @@ const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
   Guide: { bg: "bg-accent/10", text: "text-accent" },
   Guía: { bg: "bg-accent/10", text: "text-accent" },
   "Policy Brief": { bg: "bg-primary/10", text: "text-primary" },
+  Acta: { bg: "bg-primary/10", text: "text-primary" },
 };
 
 function Resources({ t }: { t: typeof T.fr }) {
@@ -935,10 +986,14 @@ function Resources({ t }: { t: typeof T.fr }) {
                     {item.tag}
                   </span>
                 </div>
-                <button className="flex-shrink-0 flex flex-col items-center gap-1.5 text-accent/60 hover:text-accent transition-colors duration-200 pt-1 group-hover:text-accent">
+                <a
+                  href={DOCS + item.file}
+                  download
+                  className="flex-shrink-0 flex flex-col items-center gap-1.5 text-accent/60 hover:text-accent transition-colors duration-200 pt-1"
+                >
                   <Download size={16} />
                   <span className="text-[9px] uppercase tracking-widest">{t.resources.download}</span>
-                </button>
+                </a>
               </div>
             );
           })}
@@ -955,47 +1010,28 @@ function Resources({ t }: { t: typeof T.fr }) {
 }
 
 // ── Footer ────────────────────────────────────────────────────────────────────
-
 function Footer({ t }: { t: typeof T.fr }) {
   return (
-    <footer className="bg-primary py-20 px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-[2fr_1fr] gap-12 pb-12 border-b border-primary-foreground/10">
-          <div>
-            <p className="font-display text-5xl font-bold text-primary-foreground mb-5 tracking-tight">
-              CoRRIC
-            </p>
-            <p className="text-primary-foreground/55 max-w-md leading-relaxed text-sm">
-              {t.footer.tagline}
-            </p>
-          </div>
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.25em] text-accent mb-4 font-bold">
-              {t.footer.contact}
-            </p>
-            <a
-              href={`mailto:${t.footer.email}`}
-              className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm"
-            >
-              {t.footer.email}
-            </a>
-
-            {/* Partner logos row */}
-            <div className="mt-10 flex gap-4 items-center">
-              {["CIRAD", "IRD", "FEF"].map((org) => (
-                <div
-                  key={org}
-                  className="border border-primary-foreground/15 px-3 py-1.5 text-[10px] uppercase tracking-widest text-primary-foreground/40"
-                >
-                  {org}
-                </div>
-              ))}
-            </div>
-          </div>
+    <footer className="bg-primary text-primary-foreground py-16 px-6">
+      <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-10">
+        <div>
+          <p className="font-display text-2xl font-bold mb-3">CoRRIC</p>
+          <p className="text-primary-foreground/60 text-sm leading-relaxed max-w-md">
+            {t.footer.tagline}
+          </p>
         </div>
-        <p className="mt-8 text-[10px] text-primary-foreground/30 tracking-widest uppercase">
-          {t.footer.rights}
-        </p>
+        <div className="md:text-right">
+          <p className="text-[10px] uppercase tracking-[0.25em] text-accent mb-3 font-bold">
+            {t.footer.contact}
+          </p>
+          <a
+            href={`mailto:${t.footer.email}`}
+            className="text-primary-foreground hover:text-accent transition-colors"
+          >
+            {t.footer.email}
+          </a>
+          <p className="text-primary-foreground/40 text-xs mt-8">{t.footer.rights}</p>
+        </div>
       </div>
     </footer>
   );
@@ -1005,10 +1041,10 @@ function Footer({ t }: { t: typeof T.fr }) {
 
 export default function App() {
   const [lang, setLang] = useState<Lang>("fr");
-  const t = T[lang] as typeof T.fr;
+  const t = T[lang];
 
   return (
-    <div className="font-body bg-background text-foreground">
+    <div className="min-h-screen">
       <Navbar lang={lang} setLang={setLang} t={t} />
       <Hero t={t} />
       <About t={t} />
